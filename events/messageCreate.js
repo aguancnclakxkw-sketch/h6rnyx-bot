@@ -1,6 +1,6 @@
 import { tieneAcceso } from '../utils/accesos.js';
   import { getPrivado } from '../utils/estadoGlobal.js';
-  import { getPrefix } from '../utils/settings.js';
+  import { getPrefix, getVerifyChannel } from '../utils/settings.js';
 
   export default {
     name: 'messageCreate',
@@ -8,6 +8,20 @@ import { tieneAcceso } from '../utils/accesos.js';
 
     async execute(client, message) {
       if (message.author.bot) return;
+
+      // Auto-delete non-!verify messages in the verify channel
+      if (message.guild) {
+        const verifyChannelId = getVerifyChannel(message.guild.id);
+        if (verifyChannelId && message.channel.id === verifyChannelId) {
+          const prefix = message.guild ? getPrefix(message.guild.id) : client.prefix;
+          const isVerifyCmd = message.content.trim().toLowerCase() === `${prefix}verify` ||
+                              message.content.trim().toLowerCase() === `${prefix}verificar`;
+          if (!isVerifyCmd) {
+            await message.delete().catch(() => {});
+            return;
+          }
+        }
+      }
 
       const prefix = message.guild ? getPrefix(message.guild.id) : client.prefix;
       if (!message.content.startsWith(prefix)) return;
