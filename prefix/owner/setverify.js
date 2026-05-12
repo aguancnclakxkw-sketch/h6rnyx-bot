@@ -15,11 +15,11 @@ import { setVerifyChannel } from '../../utils/settings.js';
 
       const channel = message.mentions.channels.first() || message.channel;
       setVerifyChannel(guildId, channel.id);
-      console.log('[SETVERIFY] Canal configurado:', channel.id, 'en guild:', guildId);
+      console.log('[SETVERIFY] Canal configurado:', channel.id, 'guild:', guildId);
 
       return message.reply(
         `✅ Canal de verificación → ${channel}\n` +
-        `Solo se permitirá \`!verify\` / \`!verificar\` — cualquier otro mensaje será borrado.\n` +
+        `Solo se permitirá \`!verify\` / \`!verificar\` — cualquier otro mensaje se borra.\n` +
         `Usa \`!setverify off\` para desactivarlo.`
       );
     },
