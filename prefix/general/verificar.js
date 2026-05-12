@@ -18,7 +18,6 @@ import { EmbedBuilder } from 'discord.js';
           },
           body: JSON.stringify({ discord_user_id: message.author.id }),
         });
-
         const data = await res.json();
         if (!res.ok || !data.token) {
           console.error('[VERIFICAR] Error al crear token:', data);
@@ -51,22 +50,22 @@ import { EmbedBuilder } from 'discord.js';
         .setFooter({ text: 'h6rnyxv hub' })
         .setTimestamp();
 
-      // Try to DM the user
+      // Try DM directly — log error if it fails so we can debug
       let dmSent = false;
       try {
-        const dm = await message.author.createDM();
-        await dm.send({ embeds: [embed] });
+        await message.author.send({ embeds: [embed] });
         dmSent = true;
-      } catch { /* DMs closed */ }
+        console.log('[VERIFICAR] DM enviado a', message.author.tag);
+      } catch (err) {
+        console.error('[VERIFICAR] DM fallido para', message.author.tag, '-', err.message);
+      }
 
       if (dmSent) {
-        // Mention in server telling them to check DMs, auto-delete after 10s
         const notice = await message.channel.send({
           content: `📬 ${message.author} — **Check your DMs! / ¡Revisa tus mensajes privados!** 🔑`,
         });
         setTimeout(() => notice.delete().catch(() => {}), 10_000);
       } else {
-        // Fallback: send embed in server channel, auto-delete after 30s
         const sent = await message.channel.send({ embeds: [embed] });
         setTimeout(() => sent.delete().catch(() => {}), 30_000);
       }
