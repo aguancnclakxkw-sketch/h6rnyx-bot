@@ -22,12 +22,10 @@ import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
         });
 
         const data = await res.json();
-
         if (!res.ok || !data.token) {
           console.error('[VERIFICAR] Error al crear token:', data);
           return interaction.editReply({ content: '❌ Error al generar el link. Intenta de nuevo más tarde.' });
         }
-
         verifyToken = data.token;
       } catch (err) {
         console.error('[VERIFICAR] Error de red:', err);
@@ -51,19 +49,32 @@ import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
         .setFooter({ text: 'h6rnyxv hub' })
         .setTimestamp();
 
-      await interaction.editReply({ embeds: [embed] });
+      // Try to DM the user
+      let dmSent = false;
+      try {
+        const dm = await interaction.user.createDM();
+        await dm.send({ embeds: [embed] });
+        dmSent = true;
+      } catch { /* DMs closed */ }
 
-      setTimeout(async () => {
+      if (dmSent) {
         await interaction.editReply({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle('🔑 Verificación de Membresía')
-              .setColor(0xed4245)
-              .setDescription('❌ Este link ha expirado. Usa `/verificar` de nuevo para obtener uno nuevo.')
-              .setFooter({ text: 'h6rnyxv hub' })
-          ],
-        }).catch(() => {});
-      }, 30_000);
+          content: '📬 **Check your DMs! / ¡Revisa tus mensajes privados!** 🔑',
+        });
+      } else {
+        await interaction.editReply({ embeds: [embed] });
+        setTimeout(async () => {
+          await interaction.editReply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle('🔑 Verificación de Membresía')
+                .setColor(0xed4245)
+                .setDescription('❌ Este link ha expirado. Usa `/verificar` de nuevo para obtener uno nuevo.')
+                .setFooter({ text: 'h6rnyxv hub' })
+            ],
+          }).catch(() => {});
+        }, 30_000);
+      }
     },
   };
   
