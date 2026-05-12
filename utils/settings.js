@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
 
   const DEFAULT = {
     status: null, prefixes: {}, logKeyChannels: {},
-    logTicketOpenChannels: {}, logTicketCloseChannels: {}, ticketCounters: {},
+    logTicketOpenChannels: {}, logTicketCloseChannels: {}, ticketCounters: {}, verifyChannels: {},
   };
 
   function cargar() {
@@ -61,5 +61,13 @@ import { readFileSync, writeFileSync, existsSync } from 'fs';
     const next = (s.ticketCounters[guildId] || 0) + 1;
     s.ticketCounters[guildId] = next; guardar(s);
     return String(next).padStart(4, '0');
+  }
+
+  export function getVerifyChannel(guildId) { return cargar().verifyChannels?.[guildId] || null; }
+  export function setVerifyChannel(guildId, channelId) {
+    const s = cargar(); if (!s.verifyChannels) s.verifyChannels = {};
+    if (channelId === null) delete s.verifyChannels[guildId];
+    else s.verifyChannels[guildId] = channelId;
+    guardar(s);
   }
   
