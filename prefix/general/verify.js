@@ -61,10 +61,10 @@ import { EmbedBuilder } from 'discord.js';
       }
 
       if (dmSent) {
-        const notice = await message.channel.send({
+        await message.channel.send({
           content: `📬 ${message.author} — **Check your DMs! / ¡Revisa tus mensajes privados!** 🔑`,
         });
-        setTimeout(() => notice.delete().catch(() => {}), 10_000);
+
       } else {
         const sent = await message.channel.send({ embeds: [embed] });
         setTimeout(() => sent.delete().catch(() => {}), 30_000);
