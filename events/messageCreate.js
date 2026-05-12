@@ -16,7 +16,7 @@ import { tieneAcceso } from '../utils/accesos.js';
           const prefix = message.guild ? getPrefix(message.guild.id) : client.prefix;
           const isVerifyCmd = message.content.trim().toLowerCase() === `${prefix}verify` ||
                               message.content.trim().toLowerCase() === `${prefix}verificar`;
-          if (!isVerifyCmd) {
+          if (!isVerifyCmd && !message.author.bot) {
             await message.delete().catch(() => {});
             return;
           }
