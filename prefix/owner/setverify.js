@@ -1,27 +1,26 @@
-import { getVerifyChannel, setVerifyChannel } from '../../utils/settings.js';
+import { setVerifyChannel } from '../../utils/settings.js';
 
   export default {
     nombre: 'setverify',
-    descripcion: 'Establece el canal de verificación (solo !verify permitido en ese canal).',
+    descripcion: 'Establece el canal donde solo se permite !verify (auto-borra otros mensajes).',
     owner: true,
 
     async ejecutar({ message, args }) {
       const guildId = message.guild.id;
 
-      // !setverify off — disable
       if (args[0]?.toLowerCase() === 'off') {
         setVerifyChannel(guildId, null);
-        return message.reply('✅ Canal de verificación desactivado. Ya no se borrará nada automáticamente.');
+        return message.reply('✅ Canal de verificación desactivado.');
       }
 
-      // Use mentioned channel or current channel
       const channel = message.mentions.channels.first() || message.channel;
       setVerifyChannel(guildId, channel.id);
+      console.log('[SETVERIFY] Canal configurado:', channel.id, 'en guild:', guildId);
 
       return message.reply(
-        `✅ Canal de verificación establecido en ${channel}.\n` +
-        `Solo se permitirá el comando \`!verify\` / \`!verificar\` — cualquier otro mensaje será borrado automáticamente.\n` +
-        `Para desactivarlo usa \`!setverify off\`.`
+        `✅ Canal de verificación → ${channel}\n` +
+        `Solo se permitirá \`!verify\` / \`!verificar\` — cualquier otro mensaje será borrado.\n` +
+        `Usa \`!setverify off\` para desactivarlo.`
       );
     },
   };
