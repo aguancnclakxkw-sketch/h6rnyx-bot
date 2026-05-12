@@ -20,20 +20,16 @@ import { EmbedBuilder } from 'discord.js';
         });
 
         const data = await res.json();
-
         if (!res.ok || !data.token) {
           console.error('[VERIFICAR] Error al crear token:', data);
           const errMsg = await message.channel.send({ content: '❌ Error al generar el link. Intenta de nuevo más tarde.' });
-          await message.delete().catch(() => {});
           setTimeout(() => errMsg.delete().catch(() => {}), 5000);
           return;
         }
-
         verifyToken = data.token;
       } catch (err) {
         console.error('[VERIFICAR] Error de red:', err);
         const errMsg = await message.channel.send({ content: '❌ No se pudo conectar con el servidor. Intenta más tarde.' });
-        await message.delete().catch(() => {});
         setTimeout(() => errMsg.delete().catch(() => {}), 5000);
         return;
       }
@@ -55,9 +51,25 @@ import { EmbedBuilder } from 'discord.js';
         .setFooter({ text: 'h6rnyxv hub' })
         .setTimestamp();
 
-      await message.delete().catch(() => {});
-      const sent = await message.channel.send({ embeds: [embed] });
-      setTimeout(() => sent.delete().catch(() => {}), 30_000);
+      // Try to DM the user
+      let dmSent = false;
+      try {
+        const dm = await message.author.createDM();
+        await dm.send({ embeds: [embed] });
+        dmSent = true;
+      } catch { /* DMs closed */ }
+
+      if (dmSent) {
+        // Mention in server telling them to check DMs, auto-delete after 10s
+        const notice = await message.channel.send({
+          content: `📬 ${message.author} — **Check your DMs! / ¡Revisa tus mensajes privados!** 🔑`,
+        });
+        setTimeout(() => notice.delete().catch(() => {}), 10_000);
+      } else {
+        // Fallback: send embed in server channel, auto-delete after 30s
+        const sent = await message.channel.send({ embeds: [embed] });
+        setTimeout(() => sent.delete().catch(() => {}), 30_000);
+      }
     },
   };
   
