@@ -20,8 +20,9 @@ import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
       GatewayIntentBits.MessageContent,
       GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildVoiceStates,
+      GatewayIntentBits.DirectMessages,
     ],
-    partials: [Partials.Channel],
+    partials: [Partials.Channel, Partials.Message],
   });
 
   client.commands = new Collection();
@@ -33,11 +34,15 @@ import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
     const ruta = join(__dirname, 'commands');
     const archivos = readdirSync(ruta).filter(f => f.endsWith('.js'));
     for (const archivo of archivos) {
-      const mod = await import(pathToFileURL(join(ruta, archivo)).href);
-      const cmd = mod.default;
-      if (!cmd?.data?.name) continue;
-      client.commands.set(cmd.data.name, cmd);
-      console.log(`[SLASH] Cargado: /${cmd.data.name}`);
+      try {
+        const mod = await import(pathToFileURL(join(ruta, archivo)).href);
+        const cmd = mod.default;
+        if (!cmd?.data?.name) continue;
+        client.commands.set(cmd.data.name, cmd);
+        console.log(`[SLASH] Cargado: /${cmd.data.name}`);
+      } catch (err) {
+        console.error(`[SLASH] Error cargando ${archivo}:`, err.message);
+      }
     }
   }
 
@@ -51,11 +56,15 @@ import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
       } catch { continue; }
 
       for (const archivo of archivos) {
-        const mod = await import(pathToFileURL(join(ruta, archivo)).href);
-        const cmd = mod.default;
-        if (!cmd?.nombre) continue;
-        client.prefixCommands.set(cmd.nombre, cmd);
-        console.log(`[PREFIX] Cargado: ${client.prefix}${cmd.nombre} (${carpeta})`);
+        try {
+          const mod = await import(pathToFileURL(join(ruta, archivo)).href);
+          const cmd = mod.default;
+          if (!cmd?.nombre) continue;
+          client.prefixCommands.set(cmd.nombre, cmd);
+          console.log(`[PREFIX] Cargado: ${client.prefix}${cmd.nombre} (${carpeta})`);
+        } catch (err) {
+          console.error(`[PREFIX] Error cargando ${carpeta}/${archivo}:`, err.message);
+        }
       }
     }
   }
@@ -64,15 +73,19 @@ import { Client, Collection, GatewayIntentBits, Partials } from 'discord.js';
     const ruta = join(__dirname, 'events');
     const archivos = readdirSync(ruta).filter(f => f.endsWith('.js'));
     for (const archivo of archivos) {
-      const mod = await import(pathToFileURL(join(ruta, archivo)).href);
-      const evento = mod.default;
-      if (!evento?.name) continue;
-      if (evento.once) {
-        client.once(evento.name, (...args) => evento.execute(client, ...args));
-      } else {
-        client.on(evento.name, (...args) => evento.execute(client, ...args));
+      try {
+        const mod = await import(pathToFileURL(join(ruta, archivo)).href);
+        const evento = mod.default;
+        if (!evento?.name) continue;
+        if (evento.once) {
+          client.once(evento.name, (...args) => evento.execute(client, ...args));
+        } else {
+          client.on(evento.name, (...args) => evento.execute(client, ...args));
+        }
+        console.log(`[EVT] Registrado: ${evento.name}`);
+      } catch (err) {
+        console.error(`[EVT] Error cargando ${archivo}:`, err.message);
       }
-      console.log(`[EVT] Registrado: ${evento.name}`);
     }
   }
 
